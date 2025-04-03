@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeatSearch</title>
+    <link rel="stylesheet" href="css/mainpage.css">
+    <!-- Three.js for 3D rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- CANNON.js for physics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+    <!-- GSAP for smooth animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <!-- Data scripts -->
+    <script src="js/artists.js"></script>
+    <script src="js/songs.js"></script>
+    <script src="js/auth-check.js"></script>
+    <script src="js/main.js" defer></script>
+</head>
+
+<body>
+    <div class="background-gradient"></div>
+    
+    <!-- 3D canvas container -->
+    <div id="canvas-container"></div>
+    
+    <div class="container">
+        <div class="logo-container">
+            <!-- Connection lines -->
+            <svg class="connection-lines" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid meet">
+                <g class="lines">
+                    <!-- Lines will be dynamically added here -->
+                </g>
+            </svg>
+        </div>
+        
+        <div class="search-container">
+            <!-- Search Bar -->
+            <div class="search-wrapper">
+                <input type="text" id="search-bar" placeholder="Search your beats, samples, projects..." autofocus />
+                <button id="search-button">Search</button>
+            </div>
+            
+            <!-- Upload Zone -->
+            <div id="upload-zone" class="upload-zone">
+                <div class="upload-inner">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 16L12 8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M9 11L12 8L15 11" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 16H16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <p>Drag & drop files or <span>browse</span></p>
+                    <input type="file" id="file-upload" multiple accept=".mp3,.wav,.aiff,.flac" />
+                </div>
+            </div>
+            
+            <!-- Results Info Panel -->
+            <div id="info-panel" class="info-panel">
+                <div class="info-content">
+                    <h3>Hover over objects to see details</h3>
+                    <p>Click to explore music</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- File Metadata Panel -->
+        <div id="metadata-panel" class="metadata-panel">
+            <div class="metadata-header">
+                <h3>File Details</h3>
+                <button id="close-metadata">×</button>
+            </div>
+            <div class="metadata-content">
+                <div class="metadata-field">
+                    <label for="meta-title">Title</label>
+                    <input type="text" id="meta-title" placeholder="Enter title">
+                </div>
+                <div class="metadata-field">
+                    <label for="meta-bpm">BPM</label>
+                    <input type="number" id="meta-bpm" placeholder="120">
+                </div>
+                <div class="metadata-field">
+                    <label for="meta-key">Key</label>
+                    <select id="meta-key">
+                        <option value="">Select key</option>
+                        <option value="C">C</option>
+                        <option value="C#">C#</option>
+                        <option value="D">D</option>
+                        <option value="D#">D#</option>
+                        <option value="E">E</option>
+                        <option value="F">F</option>
+                        <option value="F#">F#</option>
+                        <option value="G">G</option>
+                        <option value="G#">G#</option>
+                        <option value="A">A</option>
+                        <option value="A#">A#</option>
+                        <option value="B">B</option>
+                    </select>
+                </div>
+                <div class="metadata-field">
+                    <label for="meta-tags">Tags (comma separated)</label>
+                    <input type="text" id="meta-tags" placeholder="e.g., drums, jazz, chill">
+                </div>
+                <div class="metadata-field">
+                    <label for="meta-notes">Notes</label>
+                    <textarea id="meta-notes" placeholder="Add notes about this file"></textarea>
+                </div>
+                <button id="save-metadata">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Controls -->
+    <div class="user-controls">
+        <button id="login-button" class="control-button">Login</button>
+        <button id="logout-button" class="control-button" style="display: none;">Logout</button>
+        <button id="view-toggle" class="control-button">2D View</button>
+        <button id="mood-filter" class="control-button">Filter by Mood</button>
+    </div>
+    
+    <!-- Loading indicator -->
+    <div class="loading-screen">
+        <div class="loader"></div>
+        <p>Loading...</p>
+    </div>
+    
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="signUp.html">Sign Up</a></p>
+                <a href="#" id="forgot-password-link">Forgot password?</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Audio Player -->
+    <div id="audio-player" class="audio-player">
+        <div class="player-controls">
+            <button id="play-pause" class="player-button">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 5V19L19 12L8 5Z" fill="white"/>
+                </svg>
+            </button>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress"></div>
+                </div>
+                <div class="time-display">0:00 / 0:00</div>
+            </div>
+            <button id="volume-button" class="player-button">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11 5L6 9H2V15H6L11 19V5Z" fill="white"/>
+                    <path d="M15.54 8.46C16.4774 9.39764 17.0039 10.6692 17.0039 11.995C17.0039 13.3208 16.4774 14.5924 15.54 15.53" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M19.07 5.93C20.9447 7.80528 21.9979 10.3447 21.9979 13C21.9979 15.6553 20.9447 18.1947 19.07 20.07" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="now-playing">
+            <span id="current-track">No track selected</span>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <p id="notification-message"></p>
+    </div>
+</body>
+</html>
