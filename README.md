@@ -1,4 +1,5 @@
-# SampleBank
+# SampleBank (Beta) 
+(The Project is still in process)
 
 ## Introduction  
 As a music producer passionate about making type beats, I often find myself spending more time searching for the right samples than actually creating music. **SampleBank** was born out of this frustration—an intuitive platform designed to streamline the creative process by providing a centralized library for music samples, loops, and short ideas.
